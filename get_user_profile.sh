@@ -1,1 +1,1 @@
-curl https://api.basisid.com/users/info/email@example.com/d67b6cd3-7255-4203-b351-3bd26233dcc8/a956bd8dceff54384a065dc6ec183ddf52302e4613e634769cfeebfdc87c1677
+curl https://api.basisid.com/users/info/797755b1-ac75-4f03-b01d-f523df6934b2/prod-...BASISID KEY.../a5cdddb2cf1bfa5b0d9d5103a4d28911f0f9f4c2402fd35bd7cd9b3914c1300f
