@@ -1,137 +1,17 @@
 swagger: '2.0'
 info:
-  version: 1.0.0
+  version: 2.0.0
   description: |
     ## BASIS ID integration API
     BASIS ID provides 2 available integration approaches:
 
     1) Web Widget enables you to embed verification features in your website or
-    application
+    application (Please use basisid_widget.yaml for widget integration)
 
     2) Customer integration using our APIs.
 
     <br />
-    ### 1. Web Widget integration
-
-    Embed the BASIS ID Login button in your registration/authorisation form (like Facebook, Google+ and other social network buttons);
-      You are able to find 3 different colour schemes.
-
-    Insert widget code in &lt;head&gt; ... &lt;/head&gt; section on your website:
-    ```
-    <script type="text/javascript" src="https://api.basisid.com/assets/js/widget.new.js"></script>
-    ```
-    <br />
-
-    Add widget location on your website after &lt;body&gt; tag:
-
-    ```
-    <div id="bas-widget-container" style="min-height: 350px;"> BASIS ID loading...</div>
-    ```
-
-    <br />
-
-    Add widget code on the bottom of your page before &lt;/body&gt; tag:
-
-    ```
-    <script type="text/javascript">
-       window.BAS.AS.initFrame({
-           key: "BASISID_API_KEY",
-            bas_gw: "https://api.basisid.com/",
-            container_id: "bas-widget-container",
-
-            ui: {
-                width: "100%",
-                height: "108px",
-                style: "",
-            },
-
-            options: {
-
-            },
-            events:{
-                onLoad: function(){
-                   console.log("BAS AS loaded");
-                },
-
-                onManualCheck: function(result) {
-                   if (result.status === "ok"){
-                      // User data sending success
-                      // ... Add Your code here ...
-                   } else if (result.status === "canceled") {
-                     // User pushed cancel button
-                   }
-                },
-            }
-        });
-    </script>
-    ```
-    <br />
-
-    **Widget settings:**
-
-    Replace BASISID_API_KEY with the BASIS ID API Key.
-
-    You can find the Key in your CRM profile;
-
-
-    You have to configure the data transfer using Widget method: **onManualCheck**;
-
-
-    **onManualCheck** - the method is called by Widget in case of successful  / unsuccessful end of the user registration via Widget.
-
-    You will receive object called "result".
-
-
-    If user successfully registered, result looks like:
-
-     ```
-     {status: 'ok', user_hash: 'XXXXXXXXXXX'}
-     ```
-
-      In case if registration has been canceled:
-
-
-    ```
-    {status: 'canceled'}
-    ```
-
-    The values of "result" object:
-     * status - request status;
-     * user_hash - unique string user ID;
-
-
-    If you receive a successful "result" object, you can send a request to your server and execute a BASIS ID server API request from the **server**:
-
-
-      (see "Check data / Get user profile information" in this API doc)
-
-    ```
-    /users/info/{id}/{api_key}/{signature}
-    ```
-
-
-    For request to Your server in javascript you can use ajax query jquery library (jquery.com)
-
-    ```
-    function check_result(result) {
-      $.get('https://your-own-server.com/?hash='+result.user_hash,
-      function(data) {
-      ...
-      });
-    }
-    ```
-
-    or redirect to Your server page
-
-    ```
-    document.location.href='https://your-own-server.com/?hash='+result.user_hash;
-
-    ```
-
-    <br />
-    <br />
-
-    ### 2. API integration
+    ### API integration
 
     **The order of terminal operations with API:**
 

@@ -1,0 +1,438 @@
+swagger: '2.0'
+info:
+  version: 2.0.0
+  description: |
+    ## BASIS ID Web-widget integration
+    BASIS ID provides 2 available integration approaches:
+
+    1) Web Widget enables you to embed verification features in your website or
+    application
+
+    2) Customer integration using our APIs (Please use basisid.yaml for API integration).
+
+    <br />
+
+    Insert widget code in &lt;head&gt; ... &lt;/head&gt; section on your website:
+    ```
+    <script type="text/javascript" src="https://api.basisid.com/assets/js/widget.new.js"></script>
+    ```
+    <br />
+
+    Add widget location on your website after &lt;body&gt; tag:
+
+    ```
+    <div id="bas-widget-container" style="min-height: 350px;"> BASIS ID loading...</div>
+    ```
+
+    <br />
+
+    Add widget code on the bottom of your page before &lt;/body&gt; tag:
+
+    ```
+    <script type="text/javascript">
+       window.BAS.AS.initFrame({
+           key: "BASISID_API_KEY",
+            bas_gw: "https://api.basisid.com/",
+            container_id: "bas-widget-container",
+
+            ui: {
+                width: "100%",
+                height: "108px",
+                style: "",
+            },
+
+            options: {
+
+            },
+            events:{
+                onLoad: function(){
+                   console.log("BAS AS loaded");
+                },
+
+                onManualCheck: function(result) {
+                   if (result.status === "ok"){
+                      // User data sending success
+                      // ... Add Your code here ...
+                   } else if (result.status === "canceled") {
+                     // User pushed cancel button
+                   }
+                },
+            }
+        });
+    </script>
+    ```
+    <br />
+
+    **Widget settings:**
+
+    Replace BASISID_API_KEY with the BASIS ID API Key.
+
+    You can find the Key in your CRM profile;
+
+
+    You have to configure the data transfer using Widget method: **onManualCheck**;
+
+
+    **onManualCheck** - the method is called by Widget in case of successful  / unsuccessful end of the user registration via Widget.
+
+    You will receive object called "result".
+
+
+    If user successfully registered, result looks like:
+
+     ```
+     {status: 'ok', user_hash: 'XXXXXXXXXXX'}
+     ```
+
+      In case if registration has been canceled:
+
+
+    ```
+    {status: 'canceled'}
+    ```
+
+    The values of "result" object:
+     * status - request status;
+     * user_hash - unique string user ID;
+
+
+    If you receive a successful "result" object, you can send a request to your server and execute a BASIS ID server API request from the **server**:
+
+
+      (see "Check data / Get user profile information" in this API doc)
+
+    ```
+    /users/info/{id}/{api_key}/{signature}
+    ```
+
+
+    For request to Your server in javascript you can use ajax query jquery library (jquery.com)
+
+    ```
+    function check_result(result) {
+      $.get('https://your-own-server.com/?hash='+result.user_hash,
+      function(data) {
+      ...
+      });
+    }
+    ```
+
+    or redirect to Your server page
+
+    ```
+    document.location.href='https://your-own-server.com/?hash='+result.user_hash;
+
+    ```
+
+    <br />
+    <br />
+    ### Status callbacks
+
+    **Final status callback**
+
+
+    Callback is being sent if a user’s status is changed to ‘approved’ or ‘declined’.
+    In case of post moderation, callback is only being sent when your company performs double check on the client.
+
+    To enable callback, please install Callback Url in CRM settings.
+
+    An example of callback request:
+    ```
+      {"user_id":2027,
+       "user_hash":"27c5728a-7130-408d-b0a1-d55ed8ae7b2f",
+       "status":11,
+       "signature":"7ca05937a0e5c42147be2aa23ffad87e80bd866e1ff7950ec6841d4d87d844fe",
+       "autocheck_bad_reasons":""
+       }
+    ```
+
+    * user_id - user’s ID
+    * user_hash - user’s unique hash
+    * status - user’s status (10 - user is confirmed; 11 - user is declined)
+    * autocheck_bad_reasons - the reason for the request to be automatically declined
+    * signature - signature of the request
+
+    Your request is signed as BASIS_API_SECRET2 (can be found in CRM settings)
+    To create a signature you need to get sha256 hash from concatenation of the following line:
+
+    ```
+    BASIS_API_SECRET2+user_id+user_hash+status+autocheck_bad_reasons
+    ```
+
+    Java signature example:
+    ```
+    String sign256hex = org.apache.commons.codec.digest.DigestUtils.sha256Hex(BASIS_API_SECRET2 + user_id + user_hash + status + autocheck_bad_reasons);
+    if (sign256hex.equals(signature)) {
+        // Signed ...
+    }
+    ```
+
+    PHP signature example:
+    ```
+    $signature = hash('sha256', BASIS_API_SECRET2 . $inp['user_id'] . $inp['user_hash'] . $inp['status'] . $inp['autocheck_bad_reasons']);
+    if ($signature == $inp['signature']) {
+
+    }
+    ```
+
+    In response to callback you have to send the status “200OK” with any text, for example, “OK”.
+
+    If a response has not been received or it did not contain “200OK”, the system stops sending requests for 3 minutes.
+    After 3 minutes it retries to send a request.  And so on.
+
+
+    **The reasons for the request to be automatically declined**
+
+    You can have one reason or many comma separated reasons in "autocheck_bad_reasons" field:
+
+    * pep - politically exposed person
+    * The reasons for the request to be automatically declinedlaw enforcement
+    * regulatory enforcement
+    * other bodies
+    * sanctions  - government etc sanctions
+
+    * black_list - A person with the same name is mentioned in sanction lists.
+    * card - Credit card is not valid (problem with cc check)
+    * video - The passport/ID picture and face on the video are not similar. No match in facial recognition.
+    * mrz - The first name/surname/middle name/date of birth do not match with passport's machine readable zone (MRZ). Or  document is not valid.
+
+    <br />
+    <br />
+
+
+    **"Requested" statatus callback**
+
+    Callback is being sent if a user’s status is changed to ‘requested’.
+
+    By default, this functionality is disabled.
+    BASIS ID sends requests to the user directly to the email.
+    Contact BASIS ID support (support@basisid.com) if you need this functionality.
+
+    An example of callback request:
+
+    ```
+    {
+      "callback_type": "request",
+      "user_id":2027,
+      "user_hash":"27c5728a-7130-408d-b0a1-d55ed8ae7b2f",
+      "status":3,
+      "signature":"7ca05937a0e5c42147be2aa23ffad87e80bd866e1ff7950ec6841d4d87d844fe",
+      "reason": "0,5",
+      "request": "1,2",
+      "message": "Request message",
+    }
+    ```
+
+    * user_id - user’s ID
+    * user_hash - user’s unique hash
+    * status - user’s status (3 - user was requested)
+    * autocheck_bad_reasons - the reason for the request to be automatically declined
+    * signature - signature of the request
+    * reason - list of request reasons separated with ','.
+
+    0 - No required data
+    1 - Data has mistakes
+    2 - Email not confirmed
+    3 - Bad photo quality
+    4 - No required photos
+    5 - No MRZ zone on document photos
+    6 - Bad video quality
+    7 - Bad utility bill photo
+    8 - Utility bill is old
+    9 - Social accounts are not relevant
+    10 - Bad quality of latest pay slip photo
+    11 - Pay slip is old
+
+    * request - list of requested fields separated with ','.
+
+    0 - Name
+    1 - Gender
+    2 - Birthday
+    3 - Country of Nationality
+    4 - Full Address
+    5 - Phone
+    6 - E-mail
+    7 - Passport/ID card photo
+    8 - Client photo
+    9 - Video
+    10 - Utility bill
+    11 - Social networks accounts
+    12 - Latest pay slip
+
+    * message - request message
+
+    Your request is signed as BASIS_API_SECRET2 (can be found in CRM settings)
+    To create a signature you need to get sha256 hash from concatenation of the following line:
+
+    ```
+    BASIS_API_SECRET2+user_id+user_hash+status+reason+request+message
+    ```
+    <br />
+    <br />
+
+  title: BASIS ID API
+tags:
+  - name: receive data
+consumes:
+  - application/json
+produces:
+  - application/json
+host: api.basisid.com
+basePath: /
+paths:
+  /users/info/{id}/{api_key}/{signature}:
+    get:
+      tags:
+        - receive data
+      summary: Get user profile information
+      description: >-
+        Returns user profile information for defined company.
+      operationId: get-user-info
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: user_hash or email
+          x-example: b84caa8cb9097361b89509c7395be1e7f7743442 | email@example.com
+        - name: api_key
+          in: path
+          required: true
+          type: string
+          description: Company ApiKey
+          x-example: prod-d67b6cd3-7255-4203-b351-3bd26233dcc8
+        - name: signature
+          in: path
+          required: true
+          type: string
+          description: Request sha256 signature. Calculated as sha256(id+BASIS_API_SECRET2)
+          x-example: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+      responses:
+        '200':
+          description: Status 200
+          schema:
+            required:
+              - status
+              - profile
+              - user_status
+              - basis_status
+              - autocheck_status
+            type: object
+            properties:
+              status:
+                type: string
+                description: >-
+                  Request status
+                  "ok" - No errors found.
+
+                  Error statuses:
+                  "company_not_found" -  company not found.
+                  "wrong_signature" -  wrong signature
+                  "user_not_found" - user with defined user hash or email not found
+                example: ok
+              user_status:
+                type: number
+                description: User status
+                example: 10
+              basis_status:
+                type: number
+                description: BASIS ID status
+                example: 11
+              autocheck_status:
+                type: number
+                description: User profile auto verification status
+                example: 0
+              profile:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: user uniq id
+                  user_hash:
+                    type: string
+                    description: user hash
+                  first_name:
+                    type: string
+                    description: first name
+                  last_name:
+                    type: string
+                    description: last name
+                  middle_name:
+                    type: string
+                    description: middle name
+                  email:
+                    type: string
+                    description: email address
+                  email_confirmed:
+                    type: bool
+                    description: email address confirmed flag
+                  phone:
+                    type: string
+                    description: phone number
+                  phone2:
+                    type: string
+                    description: additional phone number
+                  gender:
+                    type: string
+                    description: gender
+                  address:
+                    type: string
+                    description: address line1
+                  address2:
+                    type: string
+                    description: address line2
+                  autocheck_bad_reasons:
+                    type: string
+                    description: the reason for the request to be automatically declined
+                  birthday:
+                    type: string
+                    description: date of birth, YYYY-MM-DD
+                  city:
+                    type: string
+                    description: city
+                  country:
+                    type: string
+                    description: country code, ISO2
+                  country_residence:
+                    type: string
+                    description: residence country code, ISO2
+                  zip:
+                    type: string
+                    description: post code
+
+          examples:
+            application/json:
+              status: "ok"
+              profile:
+                id: "9142"
+                user_hash: "222fc57c643d5dd86bb473ee729a52c95476fea3"
+                address: ""
+                address2: ""
+                autocheck_bad_reasons: ""
+                birthday: "1990-07-14"
+                city: ""
+                country: "ee"
+                country_residence: ""
+                email: "john@smith.com"
+                email_confirmed: "true"
+                first_name: "John"
+                last_name: "Smith"
+                gender: "male"
+                middle_name: ""
+                phone: "110011212"
+                phone2: ""
+                zip: ""
+              user_status: 11
+              basis_status: 10
+              autocheck_status: 0
+        '400':
+          description: >-
+            Bad request - input error (could not parse the JSON input request)
+        '500':
+          description: >-
+            Internal Server Error - problem with processing data on server.
+            Please, contact with support team - support@basisid.com
+      x-code-samples:
+        - lang: Curl
+          source: |
+            curl https://api.basisid.com/users/info/email@example.com/d67b6cd3-7255-4203-b351-3bd26233dcc8/a956bd8dceff54384a065dc6ec183ddf52302e4613e634769cfeebfdc87c1677
