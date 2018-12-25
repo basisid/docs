@@ -414,7 +414,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "https://api.basisid.com/users/status/:id/:api_key/:signature",
+							"raw": "https://api.basisid.com/users/info/:id/:api_key/:signature",
 							"protocol": "https",
 							"host": [
 								"api",
@@ -446,7 +446,7 @@
 								}
 							]
 						},
-						"description": "Receiving user information and status validation after registration /\nauthorization.\n\nThe list of fields depends on the settings in the CRM\ndashboard.\n\nThe method is applicable ONLY to server-side.\nDO NOT SHARE the data with anyone and DO NOT GIVE AWAY in open format.\n\nThe result of request depends on the level of access requested by end-user. The access\nlevel is determined in the CRM settings. There are 3 methods of access:\n\n  1) Basic data: Name, surname, gender, country of citizenship, e-mail address.\n\n  2) Additional data: Name, surname, gender, country of citizenship, e-mail address, phone number, age, address details.\n\n  3) All data: Name, surname, gender, country of citizenship, e-mail address, phone number, age, address details, passport/id card data, credit card\n    information (bank name, country of the issue), social networks data.\n"
+						"description": "Receiving user information and status validation after registration /\nauthorization.\n"
 					},
 					"response": []
 				}
