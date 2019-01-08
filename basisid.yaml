@@ -348,13 +348,15 @@ paths:
 
                     "empty:phone" - phone number is not specified
 
-                    "empty:email" - e-mail is not specified
+                    "empty:email" - e-mail is not specified or wrong
 
                     "empty:birthday_day" - date of birth error
 
                     "empty:birthday_month" - month of birth error
 
                     "empty:birthday_year" - year of birth error
+
+                    "error:country_nationality" - wrong country of nationality
 
                     "user:exists" -  user with this e-mail/phone number already exists"
           examples:
